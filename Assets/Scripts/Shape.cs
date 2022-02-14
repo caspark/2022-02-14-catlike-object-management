@@ -15,6 +15,12 @@ public class Shape : PersistableObject {
             }
         }
     }
+    public int MaterialId { get; private set; }
 
     int shapeId = int.MinValue;
+
+    public void SetMaterial(Material material, int materialId) {
+        GetComponent<MeshRenderer>().material = material;
+        MaterialId = materialId;
+    }
 }

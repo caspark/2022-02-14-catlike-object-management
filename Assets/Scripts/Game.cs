@@ -60,6 +60,7 @@ public class Game : PersistableObject {
         writer.Write(shapes.Count);
         foreach (Shape instance in shapes) {
             writer.Write(instance.ShapeId);
+            writer.Write(instance.MaterialId);
             instance.Save(writer);
         }
     }
@@ -72,7 +73,8 @@ public class Game : PersistableObject {
         Debug.Log($"Loading {count} shapes from version {version}");
         for (int i = 0; i < count; i++) {
             int shapeId = version > 0 ? reader.ReadInt() : 0;
-            Shape instance = shapeFactory.Get(shapeId);
+            int materialId = version > 0 ? reader.ReadInt() : 0;
+            Shape instance = shapeFactory.Get(shapeId, materialId);
             instance.Load(reader);
             shapes.Add(instance);
         }
