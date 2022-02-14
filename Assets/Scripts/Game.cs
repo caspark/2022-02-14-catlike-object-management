@@ -8,16 +8,19 @@ using UnityEngine.InputSystem.Controls;
 using Random = UnityEngine.Random;
 
 public class Game : PersistableObject {
-    [SerializeField] private PersistableObject cubePrefab;
+
+    const int saveVersion = 1;
+
+    [SerializeField] private ShapeFactory shapeFactory;
 
     [SerializeField] private PersistentStorage storage;
 
-    List<PersistableObject> objects;
+    List<Shape> shapes;
 
     string savePath;
 
     private void Awake() {
-        objects = new List<PersistableObject>();
+        shapes = new List<Shape>();
         savePath = Path.Combine(Application.persistentDataPath, "saveFile");
     }
 
@@ -33,7 +36,7 @@ public class Game : PersistableObject {
         }
         else if (keyboard.cKey.wasPressedThisFrame) {
             Debug.Log("Spawn key was pressed");
-            SpawnCube();
+            SpawnShape();
         }
         else if (keyboard.nKey.wasPressedThisFrame) {
             Debug.Log("Restart key was pressed");
@@ -51,36 +54,43 @@ public class Game : PersistableObject {
         }
     }
 
-    public override void Load(GameDataReader reader) {
-        int count = reader.ReadInt();
-        for (int i = 0; i < count; i++) {
-            Transform t = Instantiate(cubePrefab).transform;
-            t.GetComponent<PersistableObject>().Load(reader);
-            objects.Add(t.GetComponent<PersistableObject>());
-        }
-    }
 
     public override void Save(GameDataWriter writer) {
-        writer.Write(objects.Count);
-        foreach (PersistableObject t in objects) {
-            t.Save(writer);
+        writer.Write(-saveVersion);
+        writer.Write(shapes.Count);
+        foreach (Shape instance in shapes) {
+            writer.Write(instance.ShapeId);
+            instance.Save(writer);
+        }
+    }
+    public override void Load(GameDataReader reader) {
+        int version = -reader.ReadInt();
+        if (version > saveVersion) {
+            throw new InvalidOperationException($"Unsupported future save version: {version}");
+        }
+        int count = version <= 0 ? -version : reader.ReadInt();
+        Debug.Log($"Loading {count} shapes from version {version}");
+        for (int i = 0; i < count; i++) {
+            int shapeId = version > 0 ? reader.ReadInt() : 0;
+            Shape instance = shapeFactory.Get(shapeId);
+            instance.Load(reader);
+            shapes.Add(instance);
         }
     }
 
     private void BeginNewGame() {
-        foreach (PersistableObject t in objects) {
+        foreach (Shape t in shapes) {
             Destroy(t.gameObject);
         }
-        objects.Clear();
+        shapes.Clear();
     }
 
-    private void SpawnCube() {
-        PersistableObject persistableObject = Instantiate(cubePrefab);
-        GameObject cube = persistableObject.gameObject;
-        var t = cube.transform;
+    private void SpawnShape() {
+        Shape instance = shapeFactory.GetRandom(); ;
+        var t = instance.transform;
         t.position = Random.insideUnitSphere * 5.0f;
         t.rotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1.0f) * Vector3.one;
-        objects.Add(persistableObject);
+        shapes.Add(instance);
     }
 }

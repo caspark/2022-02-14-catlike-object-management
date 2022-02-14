@@ -385,8 +385,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f47dbbe47fa86814c884edd5f73aa2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 2555271328507134749, guid: a72699d3bf2effc42aec5822a6bb2414,
-    type: 3}
+  shapeFactory: {fileID: 11400000, guid: 33e0a3f3fda1d9b46a21f75880a20b99, type: 2}
   storage: {fileID: 1415212129}
 --- !u!4 &789868235
 Transform:
@@ -419,7 +418,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &832575518
 MonoBehaviour:
   m_ObjectHideFlags: 0
