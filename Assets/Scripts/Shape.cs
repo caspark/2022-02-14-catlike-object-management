@@ -22,6 +22,7 @@ public class Shape : PersistableObject {
 
     private int shapeId = int.MinValue;
 
+    [SerializeField]
     private Color color;
     MeshRenderer meshRenderer;
 

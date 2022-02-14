@@ -38,6 +38,10 @@ public class Game : PersistableObject {
             Debug.Log("Spawn key was pressed");
             SpawnShape();
         }
+        else if (keyboard.dKey.wasPressedThisFrame) {
+            Debug.Log("Delete key was pressed");
+            DeleteShape();
+        }
         else if (keyboard.nKey.wasPressedThisFrame) {
             Debug.Log("Restart key was pressed");
             BeginNewGame();
@@ -54,6 +58,15 @@ public class Game : PersistableObject {
         }
     }
 
+    private void DeleteShape() {
+        if (shapes.Count > 0) {
+            int index = Random.Range(0, shapes.Count);
+            Destroy(shapes[index].gameObject);
+            int lastIndex = shapes.Count - 1;
+            shapes[index] = shapes[lastIndex];
+            shapes.RemoveAt(lastIndex);
+        }
+    }
 
     public override void Save(GameDataWriter writer) {
         writer.Write(shapes.Count);
@@ -69,7 +82,7 @@ public class Game : PersistableObject {
             throw new InvalidOperationException($"Unsupported future save version: {version}");
         }
         int count = version <= 0 ? -version : reader.ReadInt();
-        Debug.Log($"Loading {count} shapes from version {version}");
+        Debug.Log($"Loading {count} shapes from file with save version {version}");
         for (int i = 0; i < count; i++) {
             int shapeId = version > 0 ? reader.ReadInt() : 0;
             int materialId = version > 0 ? reader.ReadInt() : 0;
