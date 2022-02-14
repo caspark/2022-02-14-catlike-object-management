@@ -15,13 +15,17 @@ public class Game : PersistableObject {
 
     [SerializeField] private PersistentStorage storage;
 
-    List<Shape> shapes;
+    public float CreationSpeed { get; set; }
+    public float DeletionSpeed { get; set; }
 
-    string savePath;
+    private List<Shape> shapes;
+
+    private float creationProgress;
+    private float deletionProgress;
+
 
     private void Awake() {
         shapes = new List<Shape>();
-        savePath = Path.Combine(Application.persistentDataPath, "saveFile");
     }
 
     void Update() {
@@ -55,6 +59,18 @@ public class Game : PersistableObject {
 
             BeginNewGame();
             storage.Load(this);
+        }
+
+        creationProgress += Time.deltaTime * CreationSpeed;
+        while (creationProgress >= 1f) {
+            creationProgress -= 1f;
+            SpawnShape();
+        }
+
+        deletionProgress += Time.deltaTime * DeletionSpeed;
+        while (deletionProgress >= 1f) {
+            deletionProgress -= 1f;
+            DeleteShape();
         }
     }
 
