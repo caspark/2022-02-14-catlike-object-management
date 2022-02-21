@@ -77,7 +77,7 @@ public class Game : PersistableObject {
     private void DeleteShape() {
         if (shapes.Count > 0) {
             int index = Random.Range(0, shapes.Count);
-            Destroy(shapes[index].gameObject);
+            shapeFactory.Reclaim(shapes[index]);
             int lastIndex = shapes.Count - 1;
             shapes[index] = shapes[lastIndex];
             shapes.RemoveAt(lastIndex);
@@ -110,7 +110,7 @@ public class Game : PersistableObject {
 
     private void BeginNewGame() {
         foreach (Shape t in shapes) {
-            Destroy(t.gameObject);
+            shapeFactory.Reclaim(t);
         }
         shapes.Clear();
     }
