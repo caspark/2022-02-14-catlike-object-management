@@ -12,6 +12,19 @@ public class ShapeFactory : ScriptableObject {
 
     Scene poolScene;
 
+    private Scene LoadedPoolScene {
+        get {
+            if (!poolScene.isLoaded) {
+                // This should only happen if Enter Play Mode Options has turned off the Domain
+                // Reload - if so, then poolScene will be non-null but also unloaded, so we need to
+                // create it again.
+                poolScene = SceneManager.CreateScene(name);
+                Debug.Log("Pool scene was not loaded so has been recreated");
+            }
+            return poolScene;
+        }
+    }
+
     public Shape Get(int shapeId, int materialId = 0) {
         Shape instance;
         if (recycle) {
@@ -27,7 +40,7 @@ public class ShapeFactory : ScriptableObject {
             }
             else {
                 instance = Instantiate(prefabs[shapeId]);
-                SceneManager.MoveGameObjectToScene(instance.gameObject, poolScene);
+                SceneManager.MoveGameObjectToScene(instance.gameObject, LoadedPoolScene);
                 instance.ShapeId = shapeId;
             }
         }
@@ -66,19 +79,24 @@ public class ShapeFactory : ScriptableObject {
         }
 
         if (Application.isEditor) {
+            // Debug.Log("Pool scene is in editor");
             poolScene = SceneManager.GetSceneByName(name);
             if (poolScene.isLoaded) {
                 GameObject[] rootObjects = poolScene.GetRootGameObjects();
+                // Debug.Log("Found existing poll scene with " + rootObjects.Length + " root objects present - reclaiming what we can");
+                int reclaimedCount = 0;
                 for (int i = 0; i < rootObjects.Length; i++) {
                     Shape pooledShape = rootObjects[i].GetComponent<Shape>();
                     if (!pooledShape.gameObject.activeSelf) {
                         pools[pooledShape.ShapeId].Add(pooledShape);
                     }
                 }
+                Debug.Log($"Reclaimed {reclaimedCount} shapes from pool's existing scene");
                 return;
             }
         }
 
         poolScene = SceneManager.CreateScene(name);
+        // Debug.Log("Pool scene has been created");
     }
 }
