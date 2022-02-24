@@ -24,9 +24,17 @@ public class Game : PersistableObject {
     private float creationProgress;
     private float deletionProgress;
 
-
-    private void Awake() {
+    private void Start() {
         shapes = new List<Shape>();
+
+        if (Application.isEditor) {
+            Scene loadedLevel = SceneManager.GetSceneByName("Level 1");
+            if (loadedLevel.isLoaded) {
+                SceneManager.SetActiveScene(loadedLevel);
+                return;
+            }
+        }
+
         StartCoroutine(LoadLevel());
     }
 
