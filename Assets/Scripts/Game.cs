@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class Game : PersistableObject {
@@ -26,6 +27,7 @@ public class Game : PersistableObject {
 
     private void Awake() {
         shapes = new List<Shape>();
+        StartCoroutine(LoadLevel());
     }
 
     void Update() {
@@ -123,5 +125,11 @@ public class Game : PersistableObject {
         t.localScale = Random.Range(0.1f, 1.0f) * Vector3.one;
         instance.SetColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.25f, 1f, 1f, 1f));
         shapes.Add(instance);
+    }
+
+    IEnumerator LoadLevel() {
+        SceneManager.LoadScene("Level 1", LoadSceneMode.Additive);
+        yield return null;
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level 1"));
     }
 }
