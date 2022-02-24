@@ -128,8 +128,9 @@ public class Game : PersistableObject {
     }
 
     IEnumerator LoadLevel() {
-        SceneManager.LoadScene("Level 1", LoadSceneMode.Additive);
-        yield return null;
+        enabled = false; // make sure input isn't processed while loading the level (disable update() callback)
+        yield return SceneManager.LoadSceneAsync("Level 1", LoadSceneMode.Additive);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level 1"));
+        enabled = true;
     }
 }
