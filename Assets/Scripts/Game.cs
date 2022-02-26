@@ -18,6 +18,8 @@ public class Game : PersistableObject {
 
     [SerializeField] private int levelCount;
 
+    [SerializeField] private SpawnZone spawnZone;
+
     public float CreationSpeed { get; set; }
     public float DeletionSpeed { get; set; }
 
@@ -57,7 +59,7 @@ public class Game : PersistableObject {
         }
         else if (keyboard.cKey.wasPressedThisFrame) {
             Debug.Log("Spawn key was pressed");
-            SpawnShape();
+            CreateShape();
         }
         else if (keyboard.dKey.wasPressedThisFrame) {
             Debug.Log("Delete key was pressed");
@@ -97,7 +99,7 @@ public class Game : PersistableObject {
         creationProgress += Time.deltaTime * CreationSpeed;
         while (creationProgress >= 1f) {
             creationProgress -= 1f;
-            SpawnShape();
+            CreateShape();
         }
 
         deletionProgress += Time.deltaTime * DeletionSpeed;
@@ -150,11 +152,11 @@ public class Game : PersistableObject {
         shapes.Clear();
     }
 
-    private void SpawnShape() {
+    private void CreateShape() {
         Shape instance = shapeFactory.GetRandom(); ;
         var t = instance.transform;
-        t.position = Random.insideUnitSphere * 5.0f;
-        t.rotation = Random.rotation;
+        t.localPosition = spawnZone.SpawnPoint;
+        t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1.0f) * Vector3.one;
         instance.SetColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.25f, 1f, 1f, 1f));
         shapes.Add(instance);
