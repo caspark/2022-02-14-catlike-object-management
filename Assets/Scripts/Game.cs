@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 
 public class Game : PersistableObject {
 
-    const int saveVersion = 1;
+    const int saveVersion = 2;
 
     [SerializeField] private ShapeFactory shapeFactory;
 
@@ -119,6 +119,7 @@ public class Game : PersistableObject {
 
     public override void Save(GameDataWriter writer) {
         writer.Write(shapes.Count);
+        writer.Write(loadedLevelBuildIndex);
         foreach (Shape instance in shapes) {
             writer.Write(instance.ShapeId);
             writer.Write(instance.MaterialId);
@@ -131,6 +132,7 @@ public class Game : PersistableObject {
             throw new InvalidOperationException($"Unsupported future save version: {version}");
         }
         int count = version <= 0 ? -version : reader.ReadInt();
+        StartCoroutine(LoadLevel(version < 2 ? 1 : reader.ReadInt()));
         Debug.Log($"Loading {count} shapes from file with save version {version}");
         for (int i = 0; i < count; i++) {
             int shapeId = version > 0 ? reader.ReadInt() : 0;
