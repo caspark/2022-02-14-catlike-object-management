@@ -16,6 +16,8 @@ public class Game : PersistableObject {
 
     [SerializeField] private PersistentStorage storage;
 
+    [SerializeField] private int levelCount;
+
     public float CreationSpeed { get; set; }
     public float DeletionSpeed { get; set; }
 
@@ -24,18 +26,23 @@ public class Game : PersistableObject {
     private float creationProgress;
     private float deletionProgress;
 
+    private int loadedLevelBuildIndex;
+
     private void Start() {
         shapes = new List<Shape>();
 
         if (Application.isEditor) {
-            Scene loadedLevel = SceneManager.GetSceneByName("Level 1");
-            if (loadedLevel.isLoaded) {
-                SceneManager.SetActiveScene(loadedLevel);
-                return;
+            for (int i = 0; i < SceneManager.sceneCount; i++) {
+                Scene loadedScene = SceneManager.GetSceneAt(i);
+                if (loadedScene.name.Contains("Level ")) {
+                    SceneManager.SetActiveScene(loadedScene);
+                    loadedLevelBuildIndex = loadedScene.buildIndex;
+                    return;
+                }
             }
         }
 
-        StartCoroutine(LoadLevel());
+        StartCoroutine(LoadLevel(1));
     }
 
     void Update() {
@@ -69,6 +76,22 @@ public class Game : PersistableObject {
 
             BeginNewGame();
             storage.Load(this);
+        }
+
+        int key1Code = 40; // the keycode of the '1' key
+        int key0Code = 49; // the keycode of the '0' key
+        for (int i = key1Code; i < key0Code; i++) {
+            if (keyboard.allKeys[i].wasPressedThisFrame) {
+                int digitPressed = i - key1Code + 1;
+                if (digitPressed > levelCount) {
+                    Debug.Log("Level " + digitPressed + " does not exist so cannot be loaded");
+                }
+                else {
+                    BeginNewGame();
+                    StartCoroutine(LoadLevel(digitPressed));
+                    return;
+                }
+            }
         }
 
         creationProgress += Time.deltaTime * CreationSpeed;
@@ -135,10 +158,15 @@ public class Game : PersistableObject {
         shapes.Add(instance);
     }
 
-    IEnumerator LoadLevel() {
+    IEnumerator LoadLevel(int levelBuildIndex) {
+        Debug.Log("Loading level " + levelBuildIndex);
         enabled = false; // make sure input isn't processed while loading the level (disable update() callback)
-        yield return SceneManager.LoadSceneAsync("Level 1", LoadSceneMode.Additive);
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName("Level 1"));
+        if (loadedLevelBuildIndex > 0) {
+            yield return SceneManager.UnloadSceneAsync(loadedLevelBuildIndex);
+        }
+        yield return SceneManager.LoadSceneAsync(levelBuildIndex, LoadSceneMode.Additive);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(levelBuildIndex));
+        loadedLevelBuildIndex = levelBuildIndex;
         enabled = true;
     }
 }
