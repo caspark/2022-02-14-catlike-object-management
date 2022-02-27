@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class Game : PersistableObject {
+    public static Game Instance { get; private set; }
 
     const int saveVersion = 2;
 
@@ -18,7 +19,7 @@ public class Game : PersistableObject {
 
     [SerializeField] private int levelCount;
 
-    [SerializeField] private SpawnZone spawnZone;
+    public SpawnZone SpawnZoneOfLevel { get; set; }
 
     public float CreationSpeed { get; set; }
     public float DeletionSpeed { get; set; }
@@ -31,6 +32,7 @@ public class Game : PersistableObject {
     private int loadedLevelBuildIndex;
 
     private void Start() {
+        Instance = this;
         shapes = new List<Shape>();
 
         if (Application.isEditor) {
@@ -45,6 +47,10 @@ public class Game : PersistableObject {
         }
 
         StartCoroutine(LoadLevel(1));
+    }
+
+    private void OnEnable() {
+        Instance = this;
     }
 
     void Update() {
@@ -155,7 +161,7 @@ public class Game : PersistableObject {
     private void CreateShape() {
         Shape instance = shapeFactory.GetRandom(); ;
         var t = instance.transform;
-        t.localPosition = spawnZone.SpawnPoint;
+        t.localPosition = SpawnZoneOfLevel.SpawnPoint;
         t.localRotation = Random.rotation;
         t.localScale = Random.Range(0.1f, 1.0f) * Vector3.one;
         instance.SetColor(Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.25f, 1f, 1f, 1f));
