@@ -32,17 +32,29 @@ public class ShapeFactory : ScriptableObject {
                 CreatePools();
             }
             List<Shape> pool = pools[shapeId];
-            int lastIndex = pool.Count - 1;
-            if (lastIndex >= 0) {
-                instance = pool[lastIndex];
-                instance.gameObject.SetActive(true);
-                pool.RemoveAt(lastIndex);
+
+            // with Unity's EnterPlayModeOptions disabling domain/scene reload, the objects
+            // might still be in the pool but actually be destroyed. If this is the case, then
+            // they will be considered to be equal to null (i.e. == is overridden). So we loop
+            // until we find a non-null one.
+            instance = null;
+            while (instance == null) {
+                int lastIndex = pool.Count - 1;
+                if (lastIndex >= 0) {
+                    instance = pool[lastIndex];
+                    pool.RemoveAt(lastIndex);
+                    if (instance != null) {
+                        // object is still valid and hasn't been destroyed
+                        instance.gameObject.SetActive(true);
+                    }
+                }
+                else {
+                    instance = Instantiate(prefabs[shapeId]);
+                    SceneManager.MoveGameObjectToScene(instance.gameObject, LoadedPoolScene);
+                    instance.ShapeId = shapeId;
+                }
             }
-            else {
-                instance = Instantiate(prefabs[shapeId]);
-                SceneManager.MoveGameObjectToScene(instance.gameObject, LoadedPoolScene);
-                instance.ShapeId = shapeId;
-            }
+
         }
         else {
             instance = Instantiate(prefabs[shapeId]);
